@@ -668,6 +668,7 @@ sed -i 's/#settings.base.prepopulate = 0/settings.base.prepopulate = 0/g' models
 cd ~web2py
 python web2py.py -S eden -M -R applications/eden/static/scripts/tools/compile.py
 /etc/init.d/uwsgi-prod start
+sudo -H -u web2py python web2py.py -S eden -M -R /home/data/import.py
 EOF2
     chmod +x /usr/local/bin/clean
 
