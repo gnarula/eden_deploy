@@ -8,19 +8,24 @@ randpw(){ < /dev/urandom tr -dc A-Z-a-z-0-9 | head -c${1:-16};echo;}
 
 function ConfigureQuestion {
     unset password
-    unset domain
-    unset hostname
     unset sitename
     echo -e "Eden Configuration\n"
-    echo -e "Using domain: $1"
-    domain=$1
+    if [ -z ${domain} ]
+        then
+        # get public dns
+        domain=$( curl http://169.254.169.254/latest/meta-data/public-hostname )
+    fi
+    echo -e "Using domain: $domain"
 
-    echo -e "Using hostname: $2"
-    hostname=$2
-    sitename=$hostname".$domain"
+    echo -e "Using hostname: $hostname"
+    if [ -z ${hostname} ]
+        then
+        sitename=$domain
+    else
+        sitename=$hostname".$domain"
+    fi
 
-    echo -e "Using template: $3"
-    template=$3
+    echo -e "Using template: $template"
     if [ -z ${template} ]
         then
         echo -e "Using default template "
@@ -31,15 +36,18 @@ function ConfigureQuestion {
     echo -e "Take note of this Password, this will be used in configuring Postgresql"
     echo ${password}
 
-    echo "Now reconfiguring system to use the hostname: $hostname"
+    if [ -z ${hostname} ]
+        then
+        echo "Now reconfiguring system to use the hostname: $hostname"
 
-    cd /etc
-    filename="hosts"
-    sed -i "s|localhost.localdomain localhost|$sitename $hostname localhost.localdomain localhost|" $filename
+        cd /etc
+        filename="hosts"
+        sed -i "s|localhost.localdomain localhost|$sitename $hostname localhost.localdomain localhost|" $filename
 
-    cd /etc
-    filename="hostname"
-    echo $hostname > $filename
+        cd /etc
+        filename="hostname"
+        echo $hostname > $filename
+    fi
 
     cd /etc
     filename="mailname"
@@ -137,7 +145,7 @@ function Init {
 
     if [ $# -ne ]
 
-    ConfigureQuestion $1 $2 $3 $4
+    ConfigureQuestion
     UpdateEden
     ConfigEmail
     ConfigTemplates
@@ -149,10 +157,15 @@ function Init {
     echo "Done Configuring"
 }
 
-if [ $# -ne 3 ]
-then
-    echo "Incorrect number of arguments"
-    exit 1
-fi
+while getopts "h:d:t:" opt; do
+    case $opt in
+        h)
+            hostname=${OPTARG};;
+        d)
+            domain=${OPTARG};;
+        t)
+            template=${OPTARG};;
+    esac
+done
 
-Init $1 $2 $3
+Init
