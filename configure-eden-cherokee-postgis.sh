@@ -11,39 +11,26 @@ function ConfigureQuestion {
     unset domain
     unset hostname
     unset sitename
-    echo -e "Eden Configuration\n"	
-    echo -e "Domain name example google.com" 
-    echo -e "What domain name should we use? : \c "
-    read domain
+    echo -e "Eden Configuration\n"
+    echo -e "Using domain: $1"
+    domain=$1
 
-    echo -e "What host name should we use? : \c "
-    read hostname
+    echo -e "Using hostname: $2"
+    hostname=$2
     sitename=$hostname".$domain"
 
-    echo -e "Press enter to use default Template [ default ]"
-    echo -e "What template should we use? : \c "
-    read template
+    echo -e "Using template: $3"
+    template=$3
     if [ -z ${template} ]
         then
         echo -e "Using default template "
         template='default'
     fi
 
-    echo "Note that web2py will not work with passwords with an @ in them"
-    echo "Press enter to geneate random password"
-    echo -e "What is the new PostgreSQL password: \c "
+    password=$( randpw )
+    echo -e "Take note of this Password, this will be used in configuring Postgresql"
+    echo ${password}
 
-    read password
-    if [ -z ${password} ]
-        then
-        password=$( randpw )
-        echo -e "Take note of this Password, this will be used in configuring Postgresql"
-        echo -e "Using random password : \c"
-        echo ${password}
-    fi
-
-    echo "Press CTRL-c to exit or return to proceed"
-    read  
     echo "Now reconfiguring system to use the hostname: $hostname"
 
     cd /etc
@@ -124,7 +111,7 @@ function ConfigDatabase {
     sudo -H -u web2py python web2py.py -S eden -M -R applications/eden/static/scripts/tools/noop.py
 }
 
-function ConfigProduciton {        
+function ConfigProduciton {
     # Configure for Production
     sed -i 's|#settings.base.prepopulate = 0|settings.base.prepopulate = 0|' ~web2py/applications/eden/models/000_config.py
     sed -i 's|settings.base.migrate = True|settings.base.migrate = False|' ~web2py/applications/eden/models/000_config.py
@@ -148,7 +135,9 @@ function Init {
         exit 1
     fi
 
-    ConfigureQuestion
+    if [ $# -ne ]
+
+    ConfigureQuestion $1 $2 $3 $4
     UpdateEden
     ConfigEmail
     ConfigTemplates
@@ -156,6 +145,14 @@ function Init {
     ConfigDatabase
     ConfigProduciton
     ConfigBackup
+
+    echo "Done Configuring"
 }
 
-Init
+if [ $# -ne 3 ]
+then
+    echo "Incorrect number of arguments"
+    exit 1
+fi
+
+Init $1 $2 $3

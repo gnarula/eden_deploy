@@ -44,9 +44,9 @@ function InstallPython {
     apt-get -y install python-xlwt python-xlrd
     apt-get -y install build-essential
     apt-get -y install python-pip
-    apt-get -y install python 
+    apt-get -y install python
     apt-get install -y libgeos-dev
-    apt-get clean  
+    apt-get clean
 }
 
 function InstallPipPackages {
@@ -182,7 +182,7 @@ set -e
 test -x \$DAEMON || exit 0
 
 case "\$1" in
-  start)        
+  start)
     echo "Starting \$NAME web server "
     start-stop-daemon --start --oknodo --pidfile \$PIDFILE --exec \$DAEMON -b
     ;;
@@ -712,9 +712,9 @@ function Init {
     UpdateSystem
 
     InstallPython
-       
+
     InstallUwsgi
-        
+
     InstallPipPackages
 
     InstallWeb2py
@@ -730,6 +730,8 @@ function Init {
     ConfigCherokee
 
     ConfigManagementScript
+
+    echo " Done installing Sahana Eden"
 }
 
 # Start the ball rolling.
