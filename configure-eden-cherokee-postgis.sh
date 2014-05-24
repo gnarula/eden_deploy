@@ -143,8 +143,6 @@ function Init {
         exit 1
     fi
 
-    if [ $# -ne ]
-
     ConfigureQuestion
     UpdateEden
     ConfigEmail
